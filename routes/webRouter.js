@@ -2,7 +2,7 @@ import { Router } from "express";
 import authenticateToken from "../utils/authenticateToken.js";
 
 export const webRouter = Router();
-let user = [{ email: "german@mail.com" }];
+let user = "";
 
 webRouter.get("/auth", authenticateToken, (req, res) => {
 	user = req.user;

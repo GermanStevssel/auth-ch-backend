@@ -1,19 +1,19 @@
 import mongoose from "mongoose";
-import moment from "moment";
-import messageSchema from "../schema/message.schema.js";
-import { config } from "../config.js";
+import { config } from "../config/index.js";
 
 const { model } = mongoose;
 mongoose.connect(`${config.mongodb.url}`);
 
-class MongoMessagesContainer {
+export default class MongoContainer {
 	constructor(collection, schema) {
 		this.collection = model(collection, schema);
 	}
 
 	getAll = async () => {
 		try {
-			return await this.collection.find({});
+			const docs = await this.collection.find({});
+			console.log("length", docs.length);
+			return docs.length ? docs : console.log("No hay nada cargado");
 		} catch (err) {
 			throw new Error(`Error al obtener todo: ${err}`);
 		}
@@ -35,7 +35,9 @@ class MongoMessagesContainer {
 
 	deleteById = async (id) => {
 		try {
-			return await this.collection.findByIdAndDelete(id);
+			const removedDoc = await this.collection.deleteOne({ _id: id });
+			console.log(`El objeto con id: ${id} se ha eliminado`);
+			return removedDoc;
 		} catch (err) {
 			throw new Error(`Error al borrar id ${id}: ${err}`);
 		}
@@ -51,26 +53,27 @@ class MongoMessagesContainer {
 	};
 
 	save = async (object) => {
-		console.log("Hola, guarde un mensaje");
-		const date = moment(new Date()).format("DD/MM/YYY HH:mm:ss");
-		object.date = date;
+		object.timestamp = new Date();
 		try {
-			return await this.collection.create(object);
+			const savedDoc = await this.collection.create(object);
+			return savedDoc;
 		} catch (err) {
 			throw new Error(`Error al guardar: ${err}`);
 		}
 	};
 
 	updateById = async (id, object) => {
+		object.timestamp = new Date();
 		try {
-			return await this.collection.findByIdAndUpdate(id, object);
+			const updatedDoc = await this.collection.updateOne(
+				{ _id: id },
+				{
+					$set: object,
+				}
+			);
+			return updatedDoc;
 		} catch {
 			throw new Error(`Error al actualizar: ${err}`);
 		}
 	};
 }
-
-export const mongoMessages = new MongoMessagesContainer(
-	"messages",
-	messageSchema
-);

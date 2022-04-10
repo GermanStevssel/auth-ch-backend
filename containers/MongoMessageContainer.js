@@ -1,19 +1,19 @@
 import mongoose from "mongoose";
-import { config } from "../config.js";
+import moment from "moment";
+import messageSchema from "../schema/message.schema.js";
+import { config } from "../config/index.js";
 
 const { model } = mongoose;
 mongoose.connect(`${config.mongodb.url}`);
 
-export default class MongoContainer {
+class MongoMessagesContainer {
 	constructor(collection, schema) {
 		this.collection = model(collection, schema);
 	}
 
 	getAll = async () => {
 		try {
-			const docs = await this.collection.find({});
-			console.log("length", docs.length);
-			return docs.length ? docs : console.log("No hay nada cargado");
+			return await this.collection.find({});
 		} catch (err) {
 			throw new Error(`Error al obtener todo: ${err}`);
 		}
@@ -35,9 +35,7 @@ export default class MongoContainer {
 
 	deleteById = async (id) => {
 		try {
-			const removedDoc = await this.collection.deleteOne({ _id: id });
-			console.log(`El objeto con id: ${id} se ha eliminado`);
-			return removedDoc;
+			return await this.collection.findByIdAndDelete(id);
 		} catch (err) {
 			throw new Error(`Error al borrar id ${id}: ${err}`);
 		}
@@ -53,27 +51,26 @@ export default class MongoContainer {
 	};
 
 	save = async (object) => {
-		object.timestamp = new Date();
+		console.log("Hola, guarde un mensaje");
+		const date = moment(new Date()).format("DD/MM/YYY HH:mm:ss");
+		object.date = date;
 		try {
-			const savedDoc = await this.collection.create(object);
-			return savedDoc;
+			return await this.collection.create(object);
 		} catch (err) {
 			throw new Error(`Error al guardar: ${err}`);
 		}
 	};
 
 	updateById = async (id, object) => {
-		object.timestamp = new Date();
 		try {
-			const updatedDoc = await this.collection.updateOne(
-				{ _id: id },
-				{
-					$set: object,
-				}
-			);
-			return updatedDoc;
+			return await this.collection.findByIdAndUpdate(id, object);
 		} catch {
 			throw new Error(`Error al actualizar: ${err}`);
 		}
 	};
 }
+
+export const mongoMessages = new MongoMessagesContainer(
+	"messages",
+	messageSchema
+);

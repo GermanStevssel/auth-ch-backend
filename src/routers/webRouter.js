@@ -1,11 +1,20 @@
 import { Router } from "express";
-import { isLoggedIn } from "../auth/auth.js";
+import authenticateToken from "../utils/authenticateToken.js";
 
 export const webRouter = Router();
+let user = [{ email: "german@mail.com" }];
 
-webRouter.get("/", isLoggedIn, (req, res) => {
-	console.log("namemin:", req.session.name);
-	res.render("index", { name: req.session?.name });
+webRouter.get("/auth", authenticateToken, (req, res) => {
+	user = req.user;
+	console.log(user);
+	res.send("usuario validado");
+});
+
+webRouter.get("/", (req, res) => {
+	if (user === "") {
+		return res.redirect("login");
+	}
+	res.render("index", { email: user[0].email });
 });
 
 webRouter.get("/logout", (req, res) => {

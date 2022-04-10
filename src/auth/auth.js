@@ -2,8 +2,7 @@ import { Router } from "express";
 const authRouter = Router();
 
 export const isLoggedIn = (req, res, next) => {
-	console.log("reqSession", req.session?.name);
-	if (!req.session?.name) {
+	if (!req.session?.email) {
 		res.redirect("/login");
 		return;
 	}
@@ -16,7 +15,6 @@ authRouter.get("/", (req, res) => {
 
 authRouter.post("/", (req, res) => {
 	const name = req.body.name;
-	console.log("name:", name);
 	if (!name || !name.length) {
 		res.status(401).json({ error: "Datos ingresados inválidos" });
 	}

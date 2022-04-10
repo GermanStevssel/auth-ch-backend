@@ -15,6 +15,8 @@ import authRouter from "./src/auth/auth.js";
 import { cartRouter } from "./src/routers/cartsRouter.js";
 import { productsRouter } from "./src/routers/productsRouter.js";
 import { webRouter } from "./src/routers/webRouter.js";
+import { registerRouter } from "./src/routers/userRouter.js";
+import { loginRouter } from "./src/routers/userRouter.js";
 import normalizer from "./src/normalizr/normalizr.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,6 +52,7 @@ io.on("connection", async (socket) => {
 
 // ----- Configuración Server -----
 app.use(json());
+app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/public"));
 app.use(cors(`${config.cors}`));
@@ -74,8 +77,9 @@ app.use(
 		},
 	})
 );
-app.use(cookieParser());
-app.use("/login", authRouter);
+
+app.use("/register", registerRouter);
+app.use("/login", loginRouter);
 app.use("/api/productos", productsRouter);
 app.use("/api/carrito", cartRouter);
 app.use("/", webRouter);
